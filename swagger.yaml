@@ -1,0 +1,385 @@
+---
+swagger: "2.0"
+info:
+  description: "Demo code"
+  version: "1.0.0"
+  title: "Payment API"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "petstore.swagger.io"
+basePath: "/v2"
+schemes:
+- "https"
+paths:
+  /payments:
+    get:
+      summary: "Lists payments"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Payment object to be added"
+        required: true
+        schema:
+          $ref: "#/definitions/Payment"
+        x-exportParamName: "Body"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Payment"
+        405:
+          description: "Invalid input"
+    post:
+      summary: "Creates a new payment"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Payment object to be added"
+        required: true
+        schema:
+          $ref: "#/definitions/Payment"
+        x-exportParamName: "Body"
+      responses:
+        405:
+          description: "Invalid input"
+  /payments/{payment_id}:
+    get:
+      summary: "Gets a payment"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "payment_id"
+        in: "path"
+        description: "ID of payment"
+        required: true
+        type: "string"
+        format: "uuid"
+        x-exportParamName: "PaymentId"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "object"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Payment not found"
+    put:
+      summary: "Update a payment"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "payment_id"
+        in: "path"
+        description: "ID of payment"
+        required: true
+        type: "string"
+        format: "uuid"
+        x-exportParamName: "PaymentId"
+      - in: "body"
+        name: "body"
+        description: "Payment object"
+        required: true
+        schema:
+          $ref: "#/definitions/Payment"
+        x-exportParamName: "Body"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "object"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Payment not found"
+    delete:
+      summary: "Deletes a payment"
+      parameters:
+      - name: "payment_id"
+        in: "path"
+        description: "ID of payment"
+        required: true
+        type: "string"
+        format: "uuid"
+        x-exportParamName: "PaymentId"
+      responses:
+        200:
+          description: "successful operation"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Payment not found"
+definitions:
+  Payment:
+    type: "object"
+    properties:
+      type:
+        type: "string"
+      id:
+        type: "string"
+      version:
+        type: "number"
+      organisation_id:
+        type: "string"
+      attributes:
+        $ref: "#/definitions/Payment_attributes"
+    example:
+      organisation_id: "organisation_id"
+      attributes:
+        debtor_party:
+          bank_id_code: "bank_id_code"
+          account_number: "account_number"
+          address: "address"
+          bank_id: "bank_id"
+          account_name: "account_name"
+          name: "name"
+          account_number_code: "account_number_code"
+        payment_scheme: "payment_scheme"
+        amount: "amount"
+        sponsor_party:
+          bank_id_code: "bank_id_code"
+          account_number: "account_number"
+          bank_id: "bank_id"
+        scheme_payment_sub_type: "scheme_payment_sub_type"
+        processing_date: "2000-01-23"
+        charges_information:
+          sender_charges:
+          - amount: "amount"
+            currency: "currency"
+          - amount: "amount"
+            currency: "currency"
+          bearer_code: "bearer_code"
+          receiver_charges_amount: "receiver_charges_amount"
+          receiver_charges_currency: "receiver_charges_currency"
+        numeric_reference: "numeric_reference"
+        end_to_end_reference: "end_to_end_reference"
+        reference: "reference"
+        fx:
+          original_currency: "original_currency"
+          exchange_rate: "exchange_rate"
+          original_amount: "original_amount"
+          contract_reference: "contract_reference"
+        payment_type: "payment_type"
+        beneficiary_party:
+          bank_id_code: "bank_id_code"
+          account_number: "account_number"
+          account_type: 6.02745618307040320615897144307382404804229736328125
+          address: "address"
+          bank_id: "bank_id"
+          account_name: "account_name"
+          name: "name"
+          account_number_code: "account_number_code"
+        payment_purpose: "payment_purpose"
+        payment_id: "payment_id"
+        currency: "currency"
+        scheme_payment_type: "scheme_payment_type"
+      id: "id"
+      type: "type"
+      version: 0.80082819046101150206595775671303272247314453125
+  Payment_attributes_beneficiary_party:
+    properties:
+      account_name:
+        type: "string"
+      account_number:
+        type: "string"
+      account_number_code:
+        type: "string"
+      account_type:
+        type: "number"
+      address:
+        type: "string"
+      bank_id:
+        type: "string"
+      bank_id_code:
+        type: "string"
+      name:
+        type: "string"
+    example:
+      bank_id_code: "bank_id_code"
+      account_number: "account_number"
+      account_type: 6.02745618307040320615897144307382404804229736328125
+      address: "address"
+      bank_id: "bank_id"
+      account_name: "account_name"
+      name: "name"
+      account_number_code: "account_number_code"
+  Payment_attributes_charges_information_sender_charges:
+    properties:
+      amount:
+        type: "string"
+      currency:
+        type: "string"
+    example:
+      amount: "amount"
+      currency: "currency"
+  Payment_attributes_charges_information:
+    properties:
+      bearer_code:
+        type: "string"
+      sender_charges:
+        type: "array"
+        items:
+          $ref: "#/definitions/Payment_attributes_charges_information_sender_charges"
+      receiver_charges_amount:
+        type: "string"
+      receiver_charges_currency:
+        type: "string"
+    example:
+      sender_charges:
+      - amount: "amount"
+        currency: "currency"
+      - amount: "amount"
+        currency: "currency"
+      bearer_code: "bearer_code"
+      receiver_charges_amount: "receiver_charges_amount"
+      receiver_charges_currency: "receiver_charges_currency"
+  Payment_attributes_debtor_party:
+    properties:
+      account_name:
+        type: "string"
+      account_number:
+        type: "string"
+      account_number_code:
+        type: "string"
+      address:
+        type: "string"
+      bank_id:
+        type: "string"
+      bank_id_code:
+        type: "string"
+      name:
+        type: "string"
+    example:
+      bank_id_code: "bank_id_code"
+      account_number: "account_number"
+      address: "address"
+      bank_id: "bank_id"
+      account_name: "account_name"
+      name: "name"
+      account_number_code: "account_number_code"
+  Payment_attributes_fx:
+    properties:
+      contract_reference:
+        type: "string"
+      exchange_rate:
+        type: "string"
+      original_amount:
+        type: "string"
+      original_currency:
+        type: "string"
+    example:
+      original_currency: "original_currency"
+      exchange_rate: "exchange_rate"
+      original_amount: "original_amount"
+      contract_reference: "contract_reference"
+  Payment_attributes_sponsor_party:
+    properties:
+      account_number:
+        type: "string"
+      bank_id:
+        type: "string"
+      bank_id_code:
+        type: "string"
+    example:
+      bank_id_code: "bank_id_code"
+      account_number: "account_number"
+      bank_id: "bank_id"
+  Payment_attributes:
+    properties:
+      amount:
+        type: "string"
+      beneficiary_party:
+        $ref: "#/definitions/Payment_attributes_beneficiary_party"
+      charges_information:
+        $ref: "#/definitions/Payment_attributes_charges_information"
+      currency:
+        type: "string"
+      debtor_party:
+        $ref: "#/definitions/Payment_attributes_debtor_party"
+      end_to_end_reference:
+        type: "string"
+      fx:
+        $ref: "#/definitions/Payment_attributes_fx"
+      numeric_reference:
+        type: "string"
+      payment_id:
+        type: "string"
+      payment_purpose:
+        type: "string"
+      payment_scheme:
+        type: "string"
+      payment_type:
+        type: "string"
+      processing_date:
+        type: "string"
+        format: "date"
+      reference:
+        type: "string"
+      scheme_payment_sub_type:
+        type: "string"
+      scheme_payment_type:
+        type: "string"
+      sponsor_party:
+        $ref: "#/definitions/Payment_attributes_sponsor_party"
+    example:
+      debtor_party:
+        bank_id_code: "bank_id_code"
+        account_number: "account_number"
+        address: "address"
+        bank_id: "bank_id"
+        account_name: "account_name"
+        name: "name"
+        account_number_code: "account_number_code"
+      payment_scheme: "payment_scheme"
+      amount: "amount"
+      sponsor_party:
+        bank_id_code: "bank_id_code"
+        account_number: "account_number"
+        bank_id: "bank_id"
+      scheme_payment_sub_type: "scheme_payment_sub_type"
+      processing_date: "2000-01-23"
+      charges_information:
+        sender_charges:
+        - amount: "amount"
+          currency: "currency"
+        - amount: "amount"
+          currency: "currency"
+        bearer_code: "bearer_code"
+        receiver_charges_amount: "receiver_charges_amount"
+        receiver_charges_currency: "receiver_charges_currency"
+      numeric_reference: "numeric_reference"
+      end_to_end_reference: "end_to_end_reference"
+      reference: "reference"
+      fx:
+        original_currency: "original_currency"
+        exchange_rate: "exchange_rate"
+        original_amount: "original_amount"
+        contract_reference: "contract_reference"
+      payment_type: "payment_type"
+      beneficiary_party:
+        bank_id_code: "bank_id_code"
+        account_number: "account_number"
+        account_type: 6.02745618307040320615897144307382404804229736328125
+        address: "address"
+        bank_id: "bank_id"
+        account_name: "account_name"
+        name: "name"
+        account_number_code: "account_number_code"
+      payment_purpose: "payment_purpose"
+      payment_id: "payment_id"
+      currency: "currency"
+      scheme_payment_type: "scheme_payment_type"
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"
