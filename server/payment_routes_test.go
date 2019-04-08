@@ -141,6 +141,15 @@ func TestPostErrors(t *testing.T) {
 	resp, secondPostErr := http.Post(endpoint, "application/json", bytes.NewBuffer(body))
 	assert.Equal(t, resp.StatusCode, 409)
 	assert.NilError(t, secondPostErr)
+
+	//Post payment with no id
+	paymentWithNoId := test_utils.ClonePaymentAndSetId(basePayment, "")
+	paymentWithNoIdBody, errMarshalPaymentWithNoId := json.Marshal(paymentWithNoId)
+	assert.NilError(t, errMarshalPaymentWithNoId)
+
+	paymentWithNoIdResp, paymentWithNoIdSecondPostErr := http.Post(endpoint, "application/json", bytes.NewBuffer(paymentWithNoIdBody))
+	assert.Equal(t, paymentWithNoIdResp.StatusCode, 400)
+	assert.NilError(t, paymentWithNoIdSecondPostErr)
 }
 
 func TestGetErrors(t *testing.T) {

@@ -7,17 +7,28 @@ info:
   license:
     name: "Apache 2.0"
     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-host: "petstore.swagger.io"
+host: "localhost:8080"
 basePath: "/v2"
 schemes:
-- "https"
+- "http"
 paths:
   /payments:
     get:
       summary: "Lists payments"
-      consumes:
-      - "application/json"
       produces:
+      - "application/json"
+      responses:
+        200:
+          description: "The operation was successful"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/PaymentList"
+        500:	
+          description: "There was a problem inside the server"
+    post:
+      summary: "Creates a new payment"
+      consumes:
       - "application/json"
       parameters:
       - in: "body"
@@ -29,30 +40,11 @@ paths:
         x-exportParamName: "Body"
       responses:
         200:
-          description: "successful operation"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Payment"
-        405:
-          description: "Invalid input"
-    post:
-      summary: "Creates a new payment"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "Payment object to be added"
-        required: true
-        schema:
-          $ref: "#/definitions/Payment"
-        x-exportParamName: "Body"
-      responses:
-        405:
-          description: "Invalid input"
+          description: "Payment successfully added"
+        400:
+          description: "Returned due to invalid input, including when an ID for the payment is not provided"
+        500:
+          description: "There was a problem inside the server"
   /payments/{payment_id}:
     get:
       summary: "Gets a payment"
@@ -68,13 +60,13 @@ paths:
         x-exportParamName: "PaymentId"
       responses:
         200:
-          description: "successful operation"
+          description: "The operation was successful"
           schema:
             type: "object"
-        400:
-          description: "Invalid ID supplied"
         404:
           description: "Payment not found"
+        500:
+          description: "There was a problem inside the server"
     put:
       summary: "Update a payment"
       produces:
@@ -96,13 +88,13 @@ paths:
         x-exportParamName: "Body"
       responses:
         200:
-          description: "successful operation"
-          schema:
-            type: "object"
+          description: "The operation was successful"
         400:
-          description: "Invalid ID supplied"
+          description: "Invalid content or Invalid ID supplied"
         404:
           description: "Payment not found"
+        500:
+          description: "There was a problem inside the server"
     delete:
       summary: "Deletes a payment"
       parameters:
@@ -115,12 +107,19 @@ paths:
         x-exportParamName: "PaymentId"
       responses:
         200:
-          description: "successful operation"
-        400:
-          description: "Invalid ID supplied"
+          description: "The operation was successful"
         404:
           description: "Payment not found"
+        500:
+          description: "There was a problem inside the server"
 definitions:
+  PaymentList:
+    type: "object"
+    properties:
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Payment'   
   Payment:
     type: "object"
     properties:
@@ -380,6 +379,4 @@ definitions:
       payment_id: "payment_id"
       currency: "currency"
       scheme_payment_type: "scheme_payment_type"
-externalDocs:
-  description: "Find out more about Swagger"
-  url: "http://swagger.io"
+

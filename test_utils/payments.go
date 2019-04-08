@@ -14,9 +14,13 @@ import (
 )
 
 func ClonePaymentWithNewId(payment *swagger.Payment) *swagger.Payment {
+	return ClonePaymentAndSetId(payment, uuid.UUID.String(uuid.New()))
+}
+
+func ClonePaymentAndSetId(payment *swagger.Payment, id string) *swagger.Payment {
 	clone := swagger.Payment{}
 	copier.Copy(&clone, payment)
-	clone.Id = uuid.UUID.String(uuid.New())
+	clone.Id = id
 	return &clone
 }
 

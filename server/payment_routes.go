@@ -16,15 +16,6 @@ func GetPaymentRoutes(db *leveldb.DB) []Route {
 	return []Route{
 
 		Route{
-			"PaymentsPaymentIdPut",
-			strings.ToUpper("Put"),
-			"/v2/payments/{payment_id}",
-			func(w http.ResponseWriter, r *http.Request) {
-				PaymentsPaymentIdPut(db, w, r)
-			},
-		},
-
-		Route{
 			"PaymentsGet",
 			strings.ToUpper("Get"),
 			"/v2/payments",
@@ -34,11 +25,11 @@ func GetPaymentRoutes(db *leveldb.DB) []Route {
 		},
 
 		Route{
-			"PaymentsPaymentIdDelete",
-			strings.ToUpper("Delete"),
-			"/v2/payments/{payment_id}",
+			"PaymentsPost",
+			strings.ToUpper("Post"),
+			"/v2/payments",
 			func(w http.ResponseWriter, r *http.Request) {
-				PaymentsPaymentIdDelete(db, w, r)
+				PaymentsPost(db, w, r)
 			},
 		},
 
@@ -52,11 +43,20 @@ func GetPaymentRoutes(db *leveldb.DB) []Route {
 		},
 
 		Route{
-			"PaymentsPost",
-			strings.ToUpper("Post"),
-			"/v2/payments",
+			"PaymentsPaymentIdPut",
+			strings.ToUpper("Put"),
+			"/v2/payments/{payment_id}",
 			func(w http.ResponseWriter, r *http.Request) {
-				PaymentsPost(db, w, r)
+				PaymentsPaymentIdPut(db, w, r)
+			},
+		},
+
+		Route{
+			"PaymentsPaymentIdDelete",
+			strings.ToUpper("Delete"),
+			"/v2/payments/{payment_id}",
+			func(w http.ResponseWriter, r *http.Request) {
+				PaymentsPaymentIdDelete(db, w, r)
 			},
 		},
 	}
@@ -79,29 +79,37 @@ func PaymentsGet(ldb *leveldb.DB, w http.ResponseWriter, r *http.Request) {
 
 }
 
-func PaymentsPaymentIdDelete(ldb *leveldb.DB, w http.ResponseWriter, r *http.Request) {
+func PaymentsPost(ldb *leveldb.DB, w http.ResponseWriter, r *http.Request) {
 
-	paymentId := paymentIdFromRequest(r)
+	newPayment, err := paymentFromRequest(r)
 
-	_, errGetPayment := db.GetPayment(ldb, paymentId)
-
-	if errGetPayment != nil {
-		w.WriteHeader(http.StatusNotFound)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	errDelete := db.DeletePayment(ldb, paymentId)
+	paymentId := newPayment.Id
 
-	if errDelete != nil {
+	if len(paymentId) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	previousPayment, errGetPayment := db.GetPayment(ldb, paymentId)
+
+	if errGetPayment == nil && previousPayment != nil {
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+
+	putErr := db.PutPayment(ldb, newPayment)
+
+	if putErr != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-}
-
-func paymentIdFromRequest(r *http.Request) string {
-	parts := strings.Split(r.URL.Path, "/")
-	return parts[len(parts)-1]
+	w.WriteHeader(http.StatusOK)
 }
 
 func PaymentsPaymentIdGet(ldb *leveldb.DB, w http.ResponseWriter, r *http.Request) {
@@ -159,6 +167,31 @@ func PaymentsPaymentIdPut(ldb *leveldb.DB, w http.ResponseWriter, r *http.Reques
 
 }
 
+func PaymentsPaymentIdDelete(ldb *leveldb.DB, w http.ResponseWriter, r *http.Request) {
+
+	paymentId := paymentIdFromRequest(r)
+
+	_, errGetPayment := db.GetPayment(ldb, paymentId)
+
+	if errGetPayment != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	errDelete := db.DeletePayment(ldb, paymentId)
+
+	if errDelete != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+}
+
+func paymentIdFromRequest(r *http.Request) string {
+	parts := strings.Split(r.URL.Path, "/")
+	return parts[len(parts)-1]
+}
+
 func paymentFromRequest(r *http.Request) (*swagger.Payment, error) {
 	body, err := ioutil.ReadAll(r.Body)
 
@@ -167,31 +200,4 @@ func paymentFromRequest(r *http.Request) (*swagger.Payment, error) {
 	}
 
 	return db.Decode(body)
-}
-
-func PaymentsPost(ldb *leveldb.DB, w http.ResponseWriter, r *http.Request) {
-
-	newPayment, err := paymentFromRequest(r)
-
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	previousPayment, errGetPayment := db.GetPayment(ldb, newPayment.Id)
-
-	if errGetPayment == nil && previousPayment != nil {
-		//TODO: Make a decent error struct ?
-		w.WriteHeader(http.StatusConflict)
-		return
-	}
-
-	putErr := db.PutPayment(ldb, newPayment)
-
-	if putErr != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
 }
