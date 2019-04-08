@@ -31,7 +31,6 @@ func StartServer(dbPath string, port int, exitChan chan<- int) *http.Server {
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
 			db.CloseDB(leveldb)
-			log.Fatal(err)
 			exitChan <- 1
 		}
 	}()

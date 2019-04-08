@@ -3,6 +3,7 @@ package server_test
 import (
 	"bytes"
 
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	http "net/http"
@@ -17,19 +18,20 @@ import (
 	"gotest.tools/assert"
 )
 
-// The big flaw in these tests is that http servers are started and not stopped.
-// This is due to some implementation of the http server and the interaction with the test framework I really know nothing about.
-// Attempting to reuse the same port causes 'binding' issues after the first test
-// So each test gets a new server and a new db
-// This means I dont get data collisions between tests
-
-func StartServer(endpoint string, port int) {
+func startServer(dbPath string, port int) *http.Server {
 	exitChan := make(chan int)
-	server.StartServer(endpoint, port, exitChan)
+	return server.StartServer(dbPath, port, exitChan)
 }
+
+func cleanup(srv *http.Server, path string) {
+	srv.Shutdown(context.TODO())
+	os.RemoveAll(path)
+}
+
 func TestEmptyPaymentListGet(t *testing.T) {
-	StartServer("/tmp/TestEmptyPaymentListGet", 8080)
-	defer os.RemoveAll("/tmp/TestPaymentListGet")
+	path := "/tmp/TestEmptyPaymentListGet"
+	srv := startServer(path, 8080)
+	defer cleanup(srv, path)
 
 	paymentList := getPaymentList(t, "http://localhost:8080/v2/payments")
 
@@ -38,8 +40,8 @@ func TestEmptyPaymentListGet(t *testing.T) {
 
 func TestPostGetDeletePayment(t *testing.T) {
 
-	StartServer("/tmp/TestPostPayment", 8081)
-	defer os.RemoveAll("/tmp/TestPostPayment")
+	srv := startServer("/tmp/TestPostPayment", 8081)
+	defer cleanup(srv, "/tmp/TestPostPayment")
 
 	payment := test_utils.GetSamplePayment(t)
 
@@ -66,8 +68,8 @@ func TestPostGetDeletePayment(t *testing.T) {
 }
 
 func TestPutPayment(t *testing.T) {
-	StartServer("/tmp/TestPutPayment", 8082)
-	defer os.RemoveAll("/tmp/TestPutPayment")
+	srv := startServer("/tmp/TestPutPayment", 8082)
+	defer cleanup(srv, "/tmp/TestPutPayment")
 	endpoint := "http://localhost:8082/v2/payments"
 
 	payment := test_utils.GetSamplePayment(t)
@@ -95,8 +97,8 @@ func TestPutPayment(t *testing.T) {
 }
 
 func TestPostGetMany(t *testing.T) {
-	StartServer("/tmp/TestPostGetMany", 8083)
-	defer os.RemoveAll("/tmp/TestPostGetMany")
+	srv := startServer("/tmp/TestPostGetMany", 8083)
+	defer cleanup(srv, "/tmp/TestPostGetMany")
 	endpoint := "http://localhost:8083/v2/payments"
 
 	numPayments := 10
@@ -118,8 +120,8 @@ func TestPostGetMany(t *testing.T) {
 }
 
 func TestPostErrors(t *testing.T) {
-	StartServer("/tmp/TestPostErrors", 8084)
-	defer os.RemoveAll("/tmp/TestPostErrors")
+	srv := startServer("/tmp/TestPostErrors", 8084)
+	defer cleanup(srv, "/tmp/TestPostErrors")
 	endpoint := "http://localhost:8084/v2/payments"
 
 	//Post bad json
@@ -142,8 +144,8 @@ func TestPostErrors(t *testing.T) {
 }
 
 func TestGetErrors(t *testing.T) {
-	StartServer("/tmp/TestGetErrors", 8085)
-	defer os.RemoveAll("/tmp/TestGetErrors")
+	srv := startServer("/tmp/TestGetErrors", 8085)
+	defer cleanup(srv, "/tmp/TestGetErrors")
 	endpoint := "http://localhost:8085/v2/payments"
 
 	//Get non existing payment
@@ -162,8 +164,8 @@ func TestGetErrors(t *testing.T) {
 }
 
 func TestPutErrors(t *testing.T) {
-	StartServer("/tmp/TestPostErrors", 8086)
-	defer os.RemoveAll("/tmp/TestPostErrors")
+	srv := startServer("/tmp/TestPostErrors", 8086)
+	defer cleanup(srv, "/tmp/TestPostErrors")
 	endpoint := "http://localhost:8086/v2/payments"
 
 	//Put non existing payment
@@ -197,7 +199,19 @@ func TestPutErrors(t *testing.T) {
 	putInvalidIdResp, errPutInvalidId := putReq(joinUrl(endpoint, payment.Id), payment2Body)
 	assert.NilError(t, errPutInvalidId)
 	assert.Equal(t, putInvalidIdResp.StatusCode, 400)
+}
 
+func TestDeleteErrors(t *testing.T) {
+	srv := startServer("/tmp/TestDeleteErrors", 8087)
+	defer cleanup(srv, "/tmp/TestDeleteErrors")
+	endpoint := "http://localhost:8087/v2/payments"
+
+	//Delete payment that doesnt exist
+	deleteReq, errDeleteReq := http.NewRequest("DELETE", joinUrl(endpoint, "nonexistingpayment"), nil)
+	assert.NilError(t, errDeleteReq)
+	deleteResp, errDeletePayment := http.DefaultClient.Do(deleteReq)
+	assert.NilError(t, errDeletePayment)
+	assert.Equal(t, deleteResp.StatusCode, 404)
 }
 
 func joinUrl(prefix string, end string) string {

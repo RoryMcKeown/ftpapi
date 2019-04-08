@@ -76,7 +76,7 @@ func PaymentsGet(ldb *leveldb.DB, w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Write(data)
-	w.WriteHeader(http.StatusOK)
+
 }
 
 func PaymentsPaymentIdDelete(ldb *leveldb.DB, w http.ResponseWriter, r *http.Request) {
@@ -97,7 +97,6 @@ func PaymentsPaymentIdDelete(ldb *leveldb.DB, w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
 }
 
 func paymentIdFromRequest(r *http.Request) string {
@@ -125,7 +124,6 @@ func PaymentsPaymentIdGet(ldb *leveldb.DB, w http.ResponseWriter, r *http.Reques
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Write(body)
-	w.WriteHeader(http.StatusOK)
 }
 
 func PaymentsPaymentIdPut(ldb *leveldb.DB, w http.ResponseWriter, r *http.Request) {
@@ -159,7 +157,6 @@ func PaymentsPaymentIdPut(ldb *leveldb.DB, w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
 }
 
 func paymentFromRequest(r *http.Request) (*swagger.Payment, error) {
