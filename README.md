@@ -2,7 +2,7 @@
 
 Demo code with minimal references to any company.
 
-Documentation of the [API]("./api.pdf")
+Documentation of the [API](./api.pdf)
 
 #### Make commands:
 
